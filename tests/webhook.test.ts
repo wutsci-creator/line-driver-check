@@ -63,6 +63,14 @@ test('sheet failure produces only unavailable and safe log codes', async () => {
   assert.deepEqual(f.sent, [messages.unavailable])
   assert.deepEqual(f.logs, ['sheet_unavailable', 'reply_ok'])
 })
+test('log only the row and reason for an invalid ID beyond row 1000', async () => {
+  const f = fixture()
+  f.service.load = async () => readIndex([header, ...Array(1000).fill([]), [id.slice(1)]])
+  assert.equal(await f.send([event('bad-row')]), 200)
+  assert.deepEqual(f.sent, [messages.unavailable])
+  assert.deepEqual(f.logs, ['sheet_id row=1002 reason=format', 'reply_ok'])
+})
+
 test('one reply failure leaves that event retryable', async () => {
   const f = fixture()
   const reply = f.service.reply

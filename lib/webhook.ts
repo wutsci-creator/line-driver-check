@@ -1,4 +1,4 @@
-import { signed, validId } from './check.ts'
+import { SheetIdError, signed, validId } from './check.ts'
 
 export const messages = {
   denied: 'บัญชีนี้ไม่มีสิทธิ์ตรวจสอบ',
@@ -54,7 +54,8 @@ export function createHandler() {
               result = 'unavailable'
               const known = ['configuration', 'google_auth', 'sheet_range', 'sheet_access',
                 'sheet_file', 'sheet_quota', 'google_read', 'sheet_header', 'sheet_row', 'sheet_id', 'sheet_empty']
-              const code = error instanceof Error && known.includes(error.message) ? error.message : 'sheet_unavailable'
+              const safe = error instanceof SheetIdError || (error instanceof Error && known.includes(error.message))
+              const code = safe ? error.message : 'sheet_unavailable'
               svc.log(code)
             }
           }
