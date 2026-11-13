@@ -17,12 +17,16 @@ export async function loadIds() {
     key: required('GOOGLE_PRIVATE_KEY').replaceAll('\\n', '\n'),
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
   })
-  const { token } = await client.getAccessToken()
+  const { token } = await client.getAccessToken().catch(() => { throw Error('google_auth') })
   if (!token) throw Error('google_auth')
   const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + sheet + '/values/' + range
   const response = await fetch(url + '?valueRenderOption=UNFORMATTED_VALUE', {
     headers: { Authorization: 'Bearer ' + token }, cache: 'no-store', signal: AbortSignal.timeout(8000),
   })
+  if (response.status === 400) throw Error('sheet_range')
+  if (response.status === 403) throw Error('sheet_access')
+  if (response.status === 404) throw Error('sheet_file')
+  if (response.status === 429) throw Error('sheet_quota')
   if (!response.ok) throw Error('google_read')
   return readIndex((await response.json()).values)
 }

@@ -50,10 +50,15 @@ export function createHandler() {
             try {
               snapshot ??= svc.load()
               result = (await snapshot).has(id) ? 'found' : 'absent'
-            } catch { result = 'unavailable' }
+            } catch (error) {
+              result = 'unavailable'
+              const known = ['configuration', 'google_auth', 'sheet_range', 'sheet_access',
+                'sheet_file', 'sheet_quota', 'google_read', 'sheet_header', 'sheet_row', 'sheet_id', 'sheet_empty']
+              const code = error instanceof Error && known.includes(error.message) ? error.message : 'sheet_unavailable'
+              svc.log(code)
+            }
           }
         }
-        if (result === 'unavailable') svc.log('sheet_unavailable')
         await svc.reply(token, messages[result])
         svc.log('reply_ok')
       }
