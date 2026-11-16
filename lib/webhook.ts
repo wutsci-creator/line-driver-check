@@ -4,7 +4,7 @@ export const messages = {
   denied: 'บัญชีนี้ไม่มีสิทธิ์ตรวจสอบ',
   invalid: 'กรุณาส่งเลข 13 หลักติดกัน และตรวจสอบว่าพิมพ์ถูกต้อง',
   found: 'พบรายการในทะเบียน กรุณาให้เจ้าหน้าที่ตรวจสอบก่อนพิจารณารับสมัคร',
-  absent: 'ไม่พบรายการในทะเบียนที่ตรวจสอบ กรุณาดำเนินการตามขั้นตอนรับสมัคร',
+  absent: (id: string) => 'ไม่พบข้อมูลสำหรับเลขบัตร: xxxxxxxxx' + id.slice(-4) + '\nสถานะ: ไม่อยู่ในกลุ่มไม่พึงประสงค์',
   unavailable: 'ระบบตรวจสอบไม่ได้ กรุณาพักการพิจารณาและลองใหม่ภายหลัง',
 }
 
@@ -42,16 +42,16 @@ export function createHandler() {
       if (pending) return pending
 
       async function respond(token: string) {
-        let result: keyof typeof messages = 'denied'
+        let text = messages.denied
         if (event.source?.userId && svc.allowed.has(event.source.userId)) {
           const id = event.message?.text?.trim() ?? ''
-          result = 'invalid'
+          text = messages.invalid
           if (validId(id)) {
             try {
               snapshot ??= svc.load()
-              result = (await snapshot).has(id) ? 'found' : 'absent'
+              text = (await snapshot).has(id) ? messages.found : messages.absent(id)
             } catch (error) {
-              result = 'unavailable'
+              text = messages.unavailable
               const known = ['configuration', 'google_auth', 'sheet_range', 'sheet_access',
                 'sheet_file', 'sheet_quota', 'google_read', 'sheet_header', 'sheet_row', 'sheet_id', 'sheet_empty']
               const safe = error instanceof SheetIdError || (error instanceof Error && known.includes(error.message))
@@ -60,7 +60,7 @@ export function createHandler() {
             }
           }
         }
-        await svc.reply(token, messages[result])
+        await svc.reply(token, text)
         svc.log('reply_ok')
       }
       const task = respond(replyToken)

@@ -54,7 +54,17 @@ test('batch checks once and coalesces duplicates', async () => {
   assert.equal(await f.send(events), 200)
   assert.equal(await f.send(events), 200)
   assert.equal(reads, 1)
-  assert.deepEqual(f.sent, [messages.found, messages.absent])
+  assert.deepEqual(f.sent, [messages.found, 'ไม่พบข้อมูลสำหรับเลขบัตร: xxxxxxxxx0001\nสถานะ: ไม่อยู่ในกลุ่มไม่พึงประสงค์'])
+})
+test('each absent reply uses the suffix from its own event', async () => {
+  const f = fixture()
+  f.service.load = async () => new Set(['0'.repeat(11) + '27'])
+  const replies = new Map<string, string>()
+  f.service.reply = async (token, message) => { replies.set(token, message) }
+  await f.send([event('a', ' ' + id + ' '), event('b', '0'.repeat(12) + '1')])
+  assert.equal(replies.get('test-a'), 'ไม่พบข้อมูลสำหรับเลขบัตร: xxxxxxxxx0019\nสถานะ: ไม่อยู่ในกลุ่มไม่พึงประสงค์')
+  assert.equal(replies.get('test-b'), 'ไม่พบข้อมูลสำหรับเลขบัตร: xxxxxxxxx0001\nสถานะ: ไม่อยู่ในกลุ่มไม่พึงประสงค์')
+  assert.deepEqual(f.logs, ['reply_ok', 'reply_ok'])
 })
 test('sheet failure produces only unavailable and safe log codes', async () => {
   const f = fixture()
