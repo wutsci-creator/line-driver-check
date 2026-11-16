@@ -43,8 +43,11 @@ export function createHandler() {
 
       async function respond(token: string) {
         let text = messages.denied
-        if (event.source?.userId && svc.allowed.has(event.source.userId)) {
-          const id = event.message?.text?.trim() ?? ''
+        const userId = event.source?.userId
+        const id = event.message?.text?.trim() ?? ''
+        if (id === 'ไอดีของฉัน') {
+          text = userId || 'LINE ไม่ได้ส่ง User ID ของบัญชีนี้ กรุณาติดต่อผู้ดูแล'
+        } else if (userId && svc.allowed.has(userId)) {
           text = messages.invalid
           if (validId(id)) {
             try {

@@ -37,7 +37,7 @@ Copy-Item .env.example .env.local
 
 1. เข้า LINE Official Account Manager → เลือก OA → Settings → Messaging API → Enable Messaging API เลือก Provider ขององค์กร แล้วเปิด Messaging API channel ที่สร้างขึ้นใน LINE Developers Console
 2. ที่ Basic settings คัดลอก Channel secret ลง LINE_CHANNEL_SECRET ที่ Messaging API ออก Channel access token (long-lived) ลง LINE_CHANNEL_ACCESS_TOKEN
-3. เริ่มกับผู้ดูแลหนึ่งคน ให้ผู้ดูแลล็อกอิน LINE Developers ด้วยบัญชี LINE เดียวกับที่จะส่งแชต ดู **Your user ID** ใน Basic settings ของ channel นี้ แล้วใส่ใน LINE_ALLOWED_USER_IDS เพิ่มหลายบัญชีโดยคั่นด้วยจุลภาค ใช้ user ID ของ provider นี้ ชื่อที่แสดง เบอร์โทร และ LINE ID สำหรับค้นหาเพื่อนใช้แทนไม่ได้ ตรวจตัวบุคคลก่อนเพิ่มสิทธิ์ ช่องว่างเปล่าปิดสิทธิ์การค้นหาทั้งหมด
+3. หลังเปิด webhook ให้เจ้าหน้าที่พิมพ์ **ไอดีของฉัน** ในแชตส่วนตัวกับ OA แล้วคัดลอกรหัสที่บอตตอบให้ผู้ดูแล ผู้ดูแลตรวจตัวบุคคลและเพิ่มรหัสต่อท้าย LINE_ALLOWED_USER_IDS ใน Vercel Production คั่นจากค่าเดิมด้วยจุลภาค จากนั้น Save และ Redeploy คำสั่งดูไอดีใช้ได้ก่อนรับสิทธิ์ค้นทะเบียน
 4. ปิดข้อความตอบกลับอัตโนมัติที่อาจทำให้ผู้ใช้เข้าใจผิดว่าได้รับผลตรวจแล้ว เพิ่ม OA เป็นเพื่อน เตรียมทดสอบผ่านแชตส่วนตัว กลุ่มและห้องสนทนาจะไม่มีข้อความตอบจากระบบนี้
 
 [เริ่มใช้งาน Messaging API](https://developers.line.biz/en/docs/messaging-api/getting-started/) · [User ID](https://developers.line.biz/en/docs/messaging-api/getting-user-ids/)

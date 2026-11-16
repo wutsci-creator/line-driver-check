@@ -46,6 +46,20 @@ test('signed verification, denied users, invalid input and group isolation', asy
     { ...event('c'), source: { type: 'group', userId: 'allowed' } }]), 200)
   assert.deepEqual(f.sent, [messages.denied, messages.invalid])
 })
+test('private ID command returns only the sender ID without granting lookup access', async () => {
+  const f = fixture()
+  let reads = 0
+  f.service.load = async () => { reads++; return new Set([id]) }
+  const command = event('self', 'ไอดีของฉัน', 'outsider')
+  assert.equal(await f.send([command], true), 401)
+  assert.equal(await f.send([command]), 200)
+  assert.equal(await f.send([{ ...command, webhookEventId: 'group', source: { type: 'group', userId: 'outsider' } }]), 200)
+  assert.equal(await f.send([event('lookup', id, 'outsider')]), 200)
+  assert.deepEqual(f.sent, ['outsider', messages.denied])
+  assert.equal(reads, 0)
+  assert.deepEqual(f.logs, ['reply_ok', 'reply_ok'])
+})
+
 test('batch checks once and coalesces duplicates', async () => {
   const f = fixture()
   let reads = 0
